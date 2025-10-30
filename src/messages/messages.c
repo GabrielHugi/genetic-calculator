@@ -48,9 +48,13 @@ void addSideInfo (char items[][stdMaxChars], char add[][stdMaxChars], int lines)
   }
 }
 
-/*
-MENUS
-*/
+void printNewScreen() {
+  #if defined(_WIN32) || defined(_WIN64)
+    system("cls");
+  #else
+    system("clear");
+  #endif
+}
 
 void transformNumberIntoPrintable(char *cool, char n) {
   //does not check for non numbers so use it properly, loser
@@ -67,36 +71,38 @@ void printCustom(int lines, char **string) {
   }
 }
 
+void freeGlobalMessage() {
+  for (int i = 0; i < globalMessage.lines; i++) {
+    free(globalMessage.content[i]);
+  }
+  free(globalMessage.content);
+  globalMessage.lines = 0;
+}
+
 void printGlobalMessage() {
   putInsideBox(globalMessage.content, globalMessage.lines, 1, 1);
   for (int i = 0; i < globalMessage.lines; i++) {
-    printf("%s\n", globalMessage.content);
+    printf("%s\n", globalMessage.content[i]);
   }
+  freeGlobalMessage();
 }
 
 int mallocGlobalMessage() {
-    int lines = globalMessage.lines;
-    globalMessage.content = malloc(lines * sizeof(char *));
-    if (globalMessage.content == NULL) {
-        perror("Main malloc failed for global message");
-        return 1;
-    }
+  int lines = globalMessage.lines;
+  printNewScreen();
+  globalMessage.content = malloc(lines * sizeof(char *));
+  if (globalMessage.content == NULL) {
+    perror("Main malloc failed for global message");
+    return 1;
+  }
 
-    for (int i = 0; i < lines; i++) {
-        globalMessage.content[i] = malloc(stdMaxChars * sizeof(char));
-        if (globalMessage.content[i] == NULL) {
-            perror("second malloc failed");
-            for (int i2 = 0; i2 < i; i2++) free(globalMessage.content[i2]);
-            free(globalMessage.content);
-            return 1;
-        }
+  for (int i = 0; i < lines; i++) {
+    globalMessage.content[i] = malloc(stdMaxChars * sizeof(char));
+    if (globalMessage.content[i] == NULL) {
+      perror("second malloc failed");
+      for (int i2 = 0; i2 < i; i2++) free(globalMessage.content[i2]);
+      free(globalMessage.content);
+      return 1;
     }
-}
-
-int freeGlobalMessage() {
-    int lines = globalMessage.lines;
-    for (int i = 0; i < lines; i++) {
-        free(globalMessage.content[i]);
-    }
-    free(globalMessage.content);
+  }
 }
